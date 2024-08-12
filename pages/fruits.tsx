@@ -1,15 +1,24 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import useSWR from "swr";
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 function Fruits() {
   const [fruitName, setFruitName] = useState("");
-  const handleChange = (fruitName: string) => {
-    setFruitName(fruitName);
-  };
+  const [debouncedFruitName, setDebouncedFruitName] = useState("");
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedFruitName(fruitName);
+    }, 500);
+
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [fruitName]);
+
   const { data: fruits, error } = useSWR<string[]>(
-    `http://localhost:3000/api/fruits?q=${fruitName}`,
+    `http://localhost:3000/api/fruits?q=${debouncedFruitName}`,
     fetcher
   );
 
@@ -23,7 +32,7 @@ function Fruits() {
       <input
         type="text"
         value={fruitName}
-        onChange={(e) => handleChange(e.target.value)}
+        onChange={(e) => setFruitName(e.target.value)}
       />
       <ul>
         {fruits
@@ -36,5 +45,3 @@ function Fruits() {
   );
 }
 export default Fruits;
-
-// delay関数?
